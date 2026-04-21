@@ -138,23 +138,6 @@ report = summarize_backtest(bt, alpha=0.99)
 
 > `LP=2500` (depuis v1.1.0) implémente l'option (b) EMIR Art. 28 et porte `k = ⌈(1-α)·LP⌉` de 3 à 25, ce qui réduit l'erreur d'estimation de l'ES de ~70 % à ~20 %.
 
-## Tests
-
-```bash
-pytest
-```
-
-Pytest est configuré dans `pyproject.toml` (couverture, seuil 70 %, strict markers, `DeprecationWarning` en erreur).
-
-`TestEndToEndNonRegression` rejoue la pipeline complète sur `data/raw/ZeroCouponCurve.csv` et verrouille les valeurs publiées :
-
-| | |
-|---|---|
-| `V(t₀)` | 81 687 674.5775 |
-| `ES_FHS` | 1 686 174.5450 |
-| `ES_stress` | 2 713 758.7015 |
-| `IM` | 1 943 070.5841 |
-
 ## Références
 
 https://www.euronext.com/en/clearing/risk-management/methodologies
