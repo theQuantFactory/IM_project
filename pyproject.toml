@@ -1,0 +1,178 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# =========================================================================== #
+#  Métadonnées projet
+# =========================================================================== #
+[project]
+name = "im-ccp"
+version = "1.1.1"
+description = "Initial Margin calculation via Filtered Historical Simulation for fixed-income portfolios (EMIR / BCBS-IOSCO compliant)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "Proprietary"}
+authors = [{name = "Quant Factory"}]
+keywords = ["initial-margin", "ccp", "fhs", "expected-shortfall", "emir", "frtb"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial",
+]
+
+# Runtime — strict minimum pour exécuter le moteur de calcul.
+# Bornes hautes pour éviter qu'un breaking change majeur (pandas 3, numpy 3,
+# scipy 2) ne casse silencieusement le pricing en production.
+dependencies = [
+    "pandas>=2.0,<3.0",
+    "numpy>=1.24,<3.0",
+    "scipy>=1.11,<2.0",
+]
+
+# =========================================================================== #
+#  Dépendances optionnelles
+# =========================================================================== #
+[project.optional-dependencies]
+# Outillage développeur (tests, lint, types)
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "ruff>=0.4",
+    "mypy>=1.8",
+    "pandas-stubs",
+]
+
+# Notebooks et visualisations (NON requis par le moteur)
+notebook = [
+    "jupyter",
+    "ipykernel",
+    "matplotlib>=3.7",
+]
+
+# Méta-extra : tout installer d'un coup → `pip install -e ".[all]"`
+all = [
+    "im-ccp[dev,notebook]",
+]
+
+[project.urls]
+Repository = "https://github.com/<org>/im-ccp"
+Documentation = "https://github.com/<org>/im-ccp#readme"
+Changelog = "https://github.com/<org>/im-ccp/blob/main/CHANGELOG.md"
+
+# =========================================================================== #
+#  Discovery des packages
+# =========================================================================== #
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+exclude = ["tests*", "notebooks*", "data*", "docs*"]
+
+# =========================================================================== #
+#  Ruff — linting + formatting
+# =========================================================================== #
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["notebooks", "data"]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "W",   # pycodestyle warnings
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "SIM", # flake8-simplify
+    "D",   # pydocstyle (docstrings)
+    "RUF", # ruff-specific rules
+    "PL",  # pylint
+]
+ignore = [
+    "D203",   # one-blank-line-before-class (incompatible avec D211)
+    "D213",   # multi-line-summary-second-line (incompatible avec D212)
+    "D401",   # non-imperative-mood (les docstrings descriptives sont OK)
+    "PLR0913", # too-many-arguments (acceptable pour fonctions de pricing)
+    "PLR2004", # magic-value-comparison (constantes inline OK)
+    "PLC0415", # import-outside-top-level (utile pour casser les imports cycliques)
+    "N803",   # argument-name-should-be-lowercase (LP, HP, SW sont conventionnels)
+    "N806",   # variable-name-should-be-lowercase (idem)
+    "RUF002", # ambiguous-unicode (σ, ϕ, × intentionnels dans docstrings math)
+    "RUF003", # ambiguous-unicode-comment (idem)
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+# Tests : on relâche les règles sur les docstrings et la longueur de lignes
+"tests/**" = ["D", "PLR2004", "E501"]
+# __init__.py : pas besoin de docstrings
+"**/__init__.py" = ["D104"]
+
+# =========================================================================== #
+#  pytest
+# =========================================================================== #
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "-ra",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=xml",
+    "--cov-fail-under=70",
+]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning:pandas.*",
+]
+
+# =========================================================================== #
+#  mypy — typage statique
+# =========================================================================== #
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+no_implicit_optional = true
+warn_unreachable = true
+warn_redundant_casts = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = ["scipy.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ["tests.*"]
+disallow_untyped_defs = false
+
+# =========================================================================== #
+#  Coverage
+# =========================================================================== #
+[tool.coverage.run]
+source = ["src"]
+branch = true
+omit = ["*/tests/*", "*/__init__.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.:",
+]
+show_missing = true
+precision = 2
