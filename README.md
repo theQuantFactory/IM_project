@@ -136,7 +136,6 @@ report = summarize_backtest(bt, alpha=0.99)
 | Fenêtre de stress | — | 2022-01-01 → 2023-12-31 |
 | Buffer / plancher APC | — | 25 % / 25 % |
 
-> `LP=2500` (depuis v1.1.0) implémente l'option (b) EMIR Art. 28 et porte `k = ⌈(1-α)·LP⌉` de 3 à 25, ce qui réduit l'erreur d'estimation de l'ES de ~70 % à ~20 %.
 
 ## Références
 
